@@ -3,59 +3,133 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đăng Nhập - Audition Việt Phục Remix</title>
+  <title>Đăng Nhập & Đăng Ký - Audition Việt Phục Remix</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-neutral-900 text-white min-h-screen flex items-center justify-center p-4">
-  <div class="bg-neutral-950 border border-neutral-800 max-w-md w-full p-8 rounded-3xl shadow-2xl space-y-6">
+<body class="bg-neutral-950 text-white min-h-screen flex items-center justify-center p-4">
+  <div class="bg-neutral-900 border border-neutral-800 max-w-md w-full p-8 rounded-3xl shadow-2xl space-y-6">
     <div class="text-center space-y-2">
-      <div class="w-12 h-12 bg-[#E60023] rounded-2xl flex items-center justify-center mx-auto text-xl font-black shadow-lg">V</div>
-      <h2 class="text-xl font-black">Audition Việt Phục Remix</h2>
-      <p class="text-xs text-neutral-400">Đăng nhập tài khoản nhà phối đồ di sản Gen-Z</p>
+      <div class="w-14 h-14 bg-[#E60023] rounded-2xl flex items-center justify-center mx-auto text-2xl font-black shadow-lg">V</div>
+      <h2 id="auth-title" class="text-2xl font-black">Đăng Nhập Tài Khoản</h2>
+      <p id="auth-desc" class="text-xs text-neutral-400">Dữ liệu được lưu trữ trực tiếp trong cơ sở dữ liệu SQLite</p>
     </div>
 
+    <!-- Mode Switcher -->
+    <div class="flex bg-neutral-950 p-1 rounded-2xl border border-neutral-800 text-xs font-bold">
+      <button id="tab-login" onclick="setMode('login')" class="flex-1 py-2.5 rounded-xl bg-neutral-800 text-white transition-all cursor-pointer">
+        Đăng Nhập
+      </button>
+      <button id="tab-register" onclick="setMode('register')" class="flex-1 py-2.5 rounded-xl text-neutral-400 hover:text-white transition-all cursor-pointer">
+        Đăng Ký Mới
+      </button>
+    </div>
+
+    <div id="alert-box" class="hidden p-3 rounded-xl text-xs font-medium border"></div>
+
     <form id="auth-form" class="space-y-4 text-xs">
-      <div class="space-y-1">
-        <label class="font-bold text-neutral-300">Tên đăng nhập (Username)</label>
-        <input id="uname" type="text" value="linhdan_phuc" required class="w-full bg-neutral-900 border border-neutral-700 rounded-xl p-3 text-white focus:outline-none focus:border-red-500">
+      <div id="register-fields" class="hidden space-y-4">
+        <div class="space-y-1">
+          <label class="font-bold text-neutral-300">Họ và tên *</label>
+          <input id="fullname" type="text" placeholder="Ví dụ: Nguyễn Phương Linh" class="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-white focus:outline-none focus:border-red-500">
+        </div>
+        <div class="space-y-1">
+          <label class="font-bold text-neutral-300">Địa chỉ Email *</label>
+          <input id="email" type="email" placeholder="email@domain.com" class="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-white focus:outline-none focus:border-red-500">
+        </div>
       </div>
 
       <div class="space-y-1">
-        <label class="font-bold text-neutral-300">Mật khẩu</label>
-        <input id="pwd" type="password" value="password123" required class="w-full bg-neutral-900 border border-neutral-700 rounded-xl p-3 text-white focus:outline-none focus:border-red-500">
+        <label class="font-bold text-neutral-300">Tên đăng nhập (Username) *</label>
+        <input id="uname" type="text" required placeholder="nhap_username" class="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-white focus:outline-none focus:border-red-500">
       </div>
 
-      <button type="submit" class="w-full py-3 bg-[#E60023] hover:bg-red-700 text-white font-extrabold rounded-xl transition-colors cursor-pointer shadow-lg">
+      <div class="space-y-1">
+        <label class="font-bold text-neutral-300">Mật khẩu *</label>
+        <input id="pwd" type="password" required placeholder="Tối thiểu 6 ký tự" class="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-white focus:outline-none focus:border-red-500">
+      </div>
+
+      <button id="submit-btn" type="submit" class="w-full py-3.5 bg-[#E60023] hover:bg-red-700 text-white font-extrabold rounded-xl transition-all cursor-pointer shadow-lg text-sm">
         Đăng Nhập Ngay
       </button>
 
       <div class="text-center pt-2">
-        <a href="/" class="text-neutral-500 hover:text-white transition-colors">← Quay lại Bảng Tin</a>
+        <a href="/" class="text-neutral-400 hover:text-white transition-colors text-xs">← Quay lại Sàn Diễn Feed</a>
       </div>
     </form>
   </div>
 
   <script>
+    let mode = 'login';
+
+    function setMode(newMode) {
+      mode = newMode;
+      const title = document.getElementById('auth-title');
+      const desc = document.getElementById('auth-desc');
+      const tabLogin = document.getElementById('tab-login');
+      const tabRegister = document.getElementById('tab-register');
+      const regFields = document.getElementById('register-fields');
+      const submitBtn = document.getElementById('submit-btn');
+      const alertBox = document.getElementById('alert-box');
+      alertBox.classList.add('hidden');
+
+      if (mode === 'login') {
+        title.innerText = 'Đăng Nhập Tài Khoản';
+        desc.innerText = 'Dữ liệu được lưu trữ trực tiếp trong cơ sở dữ liệu SQLite';
+        tabLogin.className = 'flex-1 py-2.5 rounded-xl bg-neutral-800 text-white transition-all cursor-pointer';
+        tabRegister.className = 'flex-1 py-2.5 rounded-xl text-neutral-400 hover:text-white transition-all cursor-pointer';
+        regFields.classList.add('hidden');
+        submitBtn.innerText = 'Đăng Nhập Ngay';
+      } else {
+        title.innerText = 'Tạo Tài Khoản Mới';
+        desc.innerText = 'Lưu vào bảng users trong database SQLite';
+        tabRegister.className = 'flex-1 py-2.5 rounded-xl bg-neutral-800 text-white transition-all cursor-pointer';
+        tabLogin.className = 'flex-1 py-2.5 rounded-xl text-neutral-400 hover:text-white transition-all cursor-pointer';
+        regFields.classList.remove('hidden');
+        submitBtn.innerText = 'Đăng Ký Tài Khoản';
+      }
+    }
+
     document.getElementById('auth-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const u = document.getElementById('uname').value;
+      const u = document.getElementById('uname').value.trim();
       const p = document.getElementById('pwd').value;
+      const fn = document.getElementById('fullname').value.trim();
+      const em = document.getElementById('email').value.trim();
+      const alertBox = document.getElementById('alert-box');
+
+      alertBox.classList.add('hidden');
+
+      const endpoint = mode === 'login' ? '/api/v1/auth/login' : '/api/v1/auth/register';
+      const payload = mode === 'login' ? { username: u, password: p } : { username: u, password: p, fullName: fn, email: em };
+
       try {
-        const res = await fetch('/api/v1/auth/login', {
+        const res = await fetch(endpoint, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ username: u, password: p })
+          body: JSON.stringify(payload)
         });
         const data = await res.json();
+
         if (data.success) {
-          localStorage.setItem('vpr_user', JSON.stringify(data));
+          alertBox.className = 'p-3 rounded-xl text-xs font-medium border bg-emerald-950 text-emerald-300 border-emerald-800';
+          alertBox.innerText = data.message || 'Thành công!';
+          alertBox.classList.remove('hidden');
+
+          localStorage.setItem('vpr_user', JSON.stringify(data.user));
           localStorage.setItem('vpr_token', data.token);
-          window.location.href = '/';
+
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 800);
         } else {
-          alert(data.message || 'Đăng nhập thất bại');
+          alertBox.className = 'p-3 rounded-xl text-xs font-medium border bg-red-950 text-red-300 border-red-800';
+          alertBox.innerText = data.message || 'Thất bại!';
+          alertBox.classList.remove('hidden');
         }
-      } catch(e) {
-        alert('Lỗi kết nối máy chủ');
+      } catch(err) {
+        alertBox.className = 'p-3 rounded-xl text-xs font-medium border bg-red-950 text-red-300 border-red-800';
+        alertBox.innerText = 'Không thể kết nối đến cơ sở dữ liệu';
+        alertBox.classList.remove('hidden');
       }
     });
   </script>

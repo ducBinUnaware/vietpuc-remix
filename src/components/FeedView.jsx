@@ -1,49 +1,42 @@
 import React, { useState } from 'react';
-import { Search, Heart, Bookmark, Sparkles, X, Share2, Tag, Calendar, User, ExternalLink, Flame } from 'lucide-react';
-import { OutfitPost } from '../types';
+import { Search, Heart, Bookmark, Sparkles, X, Share2, Calendar, User, ExternalLink, Flame, Plus } from 'lucide-react';
 
-interface FeedViewProps {
-  posts: OutfitPost[];
-  onLikePost: (postId: number) => void;
-  savedPostIds: number[];
-  onToggleSave: (postId: number) => void;
-  onOpenFittingRoom: () => void;
-}
-
-export const FeedView: React.FC<FeedViewProps> = ({
-  posts,
+export const FeedView = ({
+  posts = [],
+  currentUser,
   onLikePost,
-  savedPostIds,
   onToggleSave,
   onOpenFittingRoom,
+  onOpenAuth,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState('ALL');
-  const [activePost, setActivePost] = useState<OutfitPost | null>(null);
+  const [activePost, setActivePost] = useState(null);
 
-  // Filter posts based on search and tag
   const filteredPosts = posts.filter((post) => {
-    const matchesSearch =
-      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.event.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.author.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
+    const titleMatch = post.title?.toLowerCase().includes(searchQuery.toLowerCase());
+    const eventMatch = post.event?.toLowerCase().includes(searchQuery.toLowerCase());
+    const authorMatch = (post.author?.fullName || post.author?.full_name || '')
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const tagsMatch = post.tags?.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
 
+    const matchesSearch = titleMatch || eventMatch || authorMatch || tagsMatch;
     if (!matchesSearch) return false;
 
     if (selectedTag === 'ALL') return true;
-    if (selectedTag === 'NHAT_BINH') return post.tags.some((t) => t.toLowerCase().includes('nhatbinh'));
-    if (selectedTag === 'NGU_THAN') return post.tags.some((t) => t.toLowerCase().includes('nguthan'));
-    if (selectedTag === 'YEM') return post.tags.some((t) => t.toLowerCase().includes('yem'));
-    if (selectedTag === 'BUI_VIEN') return post.event.toLowerCase().includes('bùi viện');
-    if (selectedTag === 'CUOI') return post.event.toLowerCase().includes('cưới');
+    if (selectedTag === 'NHAT_BINH') return post.tags?.some((t) => t.toLowerCase().includes('nhatbinh'));
+    if (selectedTag === 'NGU_THAN') return post.tags?.some((t) => t.toLowerCase().includes('nguthan'));
+    if (selectedTag === 'YEM') return post.tags?.some((t) => t.toLowerCase().includes('yem'));
+    if (selectedTag === 'BUI_VIEN') return post.event?.toLowerCase().includes('bùi viện');
+    if (selectedTag === 'CUOI') return post.event?.toLowerCase().includes('cưới');
     return true;
   });
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 md:px-8">
       {/* Hero Banner / Header */}
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-neutral-900 via-stone-900 to-red-950 text-white p-6 md:p-8 mb-8 shadow-xl border border-red-900/30">
+      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-neutral-950 via-stone-900 to-red-950 text-white p-6 md:p-8 mb-8 shadow-xl border border-red-900/30">
         <div className="relative z-10 max-w-2xl">
           <div className="inline-flex items-center gap-2 bg-red-600/30 backdrop-blur-md border border-red-500/30 px-3 py-1 rounded-full text-xs font-bold text-red-200 mb-3">
             <Sparkles className="w-3.5 h-3.5 text-red-400" />
@@ -53,7 +46,7 @@ export const FeedView: React.FC<FeedViewProps> = ({
             Khám Phá Sàn Diễn <span className="text-[#E60023]">Việt Phục Remix</span>
           </h1>
           <p className="text-sm md:text-base text-neutral-300 leading-relaxed mb-5">
-            Nơi Gen-Z mix & match Áo Nhật Bình, Ngũ Thân, Yếm Lụa cùng phong cách Streetwear đương đại dưới đôi mắt thẩm định đanh đá của Chị Gatekeeper AI.
+            Sàn diễn kết hợp Áo Nhật Bình, Ngũ Thân, Yếm Lụa cùng phong cách Streetwear đương đại dưới đôi mắt thẩm định của Chị Gatekeeper AI. Toàn bộ tài khoản, lượt thích và bài đăng được lưu trữ trong cơ sở dữ liệu.
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <button
@@ -62,9 +55,14 @@ export const FeedView: React.FC<FeedViewProps> = ({
             >
               <Flame className="w-4 h-4" /> Thử Đồ & Chấm Điểm AI
             </button>
-            <div className="text-xs text-neutral-400 font-medium">
-              💡 Đã kiểm duyệt hơn <strong>{posts.length * 128}+</strong> bản phối cổ phục
-            </div>
+            {!currentUser && (
+              <button
+                onClick={() => onOpenAuth('register')}
+                className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-2xl border border-white/20 transition-all cursor-pointer"
+              >
+                Đăng ký tài khoản để đăng bài
+              </button>
+            )}
           </div>
         </div>
         <div className="absolute -right-10 -bottom-10 w-80 h-80 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
@@ -78,8 +76,8 @@ export const FeedView: React.FC<FeedViewProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Tìm theo tên bộ phối, sự kiện (Bùi Viện, tiệc cưới...), tác giả, #hashtag..."
-            className="w-full bg-white border border-neutral-200 rounded-2xl pl-12 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E60023] focus:border-transparent shadow-sm placeholder:text-neutral-400"
+            placeholder="Tìm theo tên bộ phối, sự kiện (Bùi Viện, tiệc cưới...), người tạo, #hashtag..."
+            className="w-full bg-white border border-neutral-200 rounded-2xl pl-12 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E60023] focus:border-transparent shadow-sm placeholder:text-neutral-400 font-medium"
           />
           {searchQuery && (
             <button
@@ -118,23 +116,31 @@ export const FeedView: React.FC<FeedViewProps> = ({
 
       {/* Pinterest-style Masonry Grid */}
       {filteredPosts.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-3xl border border-neutral-200 p-8">
-          <div className="w-16 h-16 bg-red-50 text-[#E60023] rounded-full flex items-center justify-center mx-auto mb-4">
-            <Search className="w-8 h-8" />
+        <div className="text-center py-16 bg-white rounded-3xl border border-neutral-200 p-8 space-y-4">
+          <div className="w-16 h-16 bg-red-50 text-[#E60023] rounded-full flex items-center justify-center mx-auto">
+            <Sparkles className="w-8 h-8" />
           </div>
-          <h3 className="text-lg font-bold text-neutral-900 mb-1">Không tìm thấy bản phối phù hợp</h3>
-          <p className="text-sm text-neutral-500 mb-6">Thử từ khóa khác hoặc tạo ngay bản phối Việt Phục của riêng bạn!</p>
+          <div>
+            <h3 className="text-lg font-bold text-neutral-900">
+              {searchQuery ? 'Không tìm thấy bản phối phù hợp' : 'Chưa có bản phối nào trên sàn'}
+            </h3>
+            <p className="text-sm text-neutral-500 max-w-md mx-auto mt-1">
+              Hãy vào Phòng Thử Đồ, chọn các trang phục di sản yêu thích và đăng bản phối đầu tiên lưu vào cơ sở dữ liệu!
+            </p>
+          </div>
           <button
             onClick={onOpenFittingRoom}
-            className="px-5 py-2.5 bg-[#E60023] text-white text-sm font-bold rounded-xl shadow-md hover:bg-red-700 transition-colors"
+            className="px-6 py-3 bg-[#E60023] text-white text-xs font-extrabold rounded-2xl shadow-md hover:bg-red-700 transition-colors inline-flex items-center gap-2 cursor-pointer"
           >
-            Vào Phòng Thử Đồ Ngay
+            <Plus className="w-4 h-4" /> Tạo Bản Phối Đầu Tiên
           </button>
         </div>
       ) : (
         <div className="pinterest-masonry">
           {filteredPosts.map((post) => {
-            const isSaved = savedPostIds.includes(post.id);
+            const isLiked = Boolean(post.isLiked);
+            const isBookmarked = Boolean(post.isBookmarked);
+
             return (
               <div
                 key={post.id}
@@ -164,20 +170,24 @@ export const FeedView: React.FC<FeedViewProps> = ({
                     )}
                   </div>
 
-                  {/* Pinterest Save Button on Hover */}
+                  {/* Bookmark Button */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
+                      if (!currentUser) {
+                        onOpenAuth('login');
+                        return;
+                      }
                       onToggleSave(post.id);
                     }}
-                    className={`absolute top-3 right-3 p-2.5 rounded-full transition-all duration-200 pointer-events-auto ${
-                      isSaved
+                    className={`absolute top-3 right-3 p-2.5 rounded-full transition-all duration-200 pointer-events-auto cursor-pointer ${
+                      isBookmarked
                         ? 'bg-neutral-900 text-white shadow-md'
                         : 'bg-white/90 text-neutral-800 hover:bg-[#E60023] hover:text-white opacity-0 group-hover:opacity-100 shadow-lg'
                     }`}
-                    title={isSaved ? 'Bỏ ghim' : 'Ghim vào bộ sưu tập'}
+                    title={isBookmarked ? 'Bỏ lưu' : 'Lưu bản phối'}
                   >
-                    <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+                    <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />
                   </button>
 
                   {/* Event Context Pill at Bottom of Image */}
@@ -204,24 +214,32 @@ export const FeedView: React.FC<FeedViewProps> = ({
                   <div className="flex items-center justify-between pt-1 border-t border-neutral-100">
                     <div className="flex items-center gap-2 overflow-hidden">
                       <img
-                        src={post.author.avatarUrl}
-                        alt={post.author.fullName}
+                        src={post.author?.avatarUrl || post.author?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
+                        alt={post.author?.fullName || post.author?.full_name}
                         className="w-6 h-6 rounded-full object-cover ring-1 ring-neutral-200 shrink-0"
                       />
                       <span className="text-xs font-semibold text-neutral-700 truncate">
-                        {post.author.fullName}
+                        {post.author?.fullName || post.author?.full_name || 'Nhà Phối Đồ'}
                       </span>
                     </div>
 
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (!currentUser) {
+                          onOpenAuth('login');
+                          return;
+                        }
                         onLikePost(post.id);
                       }}
-                      className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-red-600 transition-colors p-1"
+                      className={`flex items-center gap-1.5 text-xs transition-colors p-1.5 rounded-lg cursor-pointer ${
+                        isLiked
+                          ? 'text-red-600 bg-red-50 font-bold'
+                          : 'text-neutral-500 hover:text-red-600 hover:bg-neutral-50'
+                      }`}
                     >
-                      <Heart className="w-4 h-4 fill-red-50 text-red-500" />
-                      <span className="font-bold">{post.likesCount}</span>
+                      <Heart className={`w-4 h-4 ${isLiked ? 'fill-red-600 text-red-600' : 'text-neutral-400'}`} />
+                      <span>{post.likesCount || 0}</span>
                     </button>
                   </div>
                 </div>
@@ -238,7 +256,7 @@ export const FeedView: React.FC<FeedViewProps> = ({
             {/* Close Button */}
             <button
               onClick={() => setActivePost(null)}
-              className="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black text-white p-2 rounded-full transition-colors"
+              className="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black text-white p-2 rounded-full transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -263,32 +281,50 @@ export const FeedView: React.FC<FeedViewProps> = ({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <img
-                    src={activePost.author.avatarUrl}
-                    alt={activePost.author.fullName}
+                    src={activePost.author?.avatarUrl || activePost.author?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
+                    alt={activePost.author?.fullName || activePost.author?.full_name}
                     className="w-11 h-11 rounded-full object-cover ring-2 ring-neutral-200"
                   />
                   <div>
-                    <h4 className="font-bold text-sm text-neutral-900">{activePost.author.fullName}</h4>
-                    <p className="text-xs text-neutral-500">@{activePost.author.username}</p>
+                    <h4 className="font-bold text-sm text-neutral-900">
+                      {activePost.author?.fullName || activePost.author?.full_name}
+                    </h4>
+                    <p className="text-xs text-neutral-500">@{activePost.author?.username}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => onToggleSave(activePost.id)}
-                    className={`p-2.5 rounded-full border transition-all ${
-                      savedPostIds.includes(activePost.id)
+                    onClick={() => {
+                      if (!currentUser) {
+                        onOpenAuth('login');
+                        return;
+                      }
+                      onToggleSave(activePost.id);
+                    }}
+                    className={`p-2.5 rounded-full border transition-all cursor-pointer ${
+                      activePost.isBookmarked
                         ? 'bg-neutral-900 border-neutral-900 text-white'
                         : 'border-neutral-200 text-neutral-600 hover:bg-neutral-100'
                     }`}
-                    title="Ghim bài viết"
+                    title="Lưu bản phối"
                   >
                     <Bookmark className="w-4 h-4" />
                   </button>
 
                   <button
-                    onClick={() => onLikePost(activePost.id)}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-red-50 text-[#E60023] hover:bg-red-100 transition-colors font-bold text-xs"
+                    onClick={() => {
+                      if (!currentUser) {
+                        onOpenAuth('login');
+                        return;
+                      }
+                      onLikePost(activePost.id);
+                    }}
+                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full transition-colors font-bold text-xs cursor-pointer ${
+                      activePost.isLiked
+                        ? 'bg-red-600 text-white'
+                        : 'bg-red-50 text-[#E60023] hover:bg-red-100'
+                    }`}
                   >
                     <Heart className="w-4 h-4 fill-current" />
                     <span>{activePost.likesCount} Thả Tim</span>
@@ -347,7 +383,7 @@ export const FeedView: React.FC<FeedViewProps> = ({
                         />
                         <div className="text-xs">
                           <p className="font-bold text-neutral-900">{item.name}</p>
-                          <p className="text-neutral-500 text-[11px]">{item.culturalContext}</p>
+                          <p className="text-neutral-500 text-[11px]">{item.culturalContext || item.description}</p>
                         </div>
                       </div>
                     ))}
@@ -357,10 +393,10 @@ export const FeedView: React.FC<FeedViewProps> = ({
 
               {/* Hashtags */}
               <div className="flex flex-wrap gap-1.5 pt-2">
-                {activePost.tags.map((t, idx) => (
+                {activePost.tags?.map((t, idx) => (
                   <span
                     key={idx}
-                    className="text-[11px] font-semibold text-neutral-500 bg-neutral-100 hover:bg-neutral-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                    className="text-[11px] font-semibold text-neutral-500 bg-neutral-100 hover:bg-neutral-200 px-2.5 py-1 rounded-lg transition-colors"
                   >
                     #{t}
                   </span>

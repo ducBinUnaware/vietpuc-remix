@@ -20,44 +20,88 @@
       <a href="/" class="text-neutral-600 hover:text-[#E60023] transition-colors">🏠 Khám Phá Feed</a>
       <a href="/page/wardrobe.html" class="text-neutral-600 hover:text-[#E60023] transition-colors">👗 Phòng Thử Đồ</a>
       <a href="/page/profile.html" class="text-[#E60023] bg-red-50 px-3 py-1.5 rounded-xl">📌 Trang Cá Nhân</a>
-      <a href="/page/login.html" class="px-4 py-2 bg-neutral-900 text-white rounded-xl">Đăng Nhập</a>
+      <div id="nav-auth-slot">
+        <a href="/page/login.html" class="px-4 py-2 bg-neutral-900 text-white rounded-xl">Đăng Nhập</a>
+      </div>
     </nav>
   </header>
 
   <main class="max-w-4xl mx-auto p-6 md:p-8">
-    <div class="bg-white rounded-3xl p-8 border border-neutral-200 shadow-sm flex items-center gap-6 mb-8">
-      <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400" class="w-24 h-24 rounded-3xl object-cover ring-4 ring-neutral-100" />
-      <div class="space-y-1">
-        <h2 class="text-2xl font-black text-neutral-900">Linh Đan Phạm</h2>
-        <p class="text-xs text-neutral-400">@linhdan_phuc</p>
-        <p class="text-xs text-neutral-600 max-w-lg">Gen-Z mê Áo Nhật Bình & phối đồ Streetwear. Sống tại Sài Gòn 🌿</p>
-      </div>
+    <div id="profile-card" class="bg-white rounded-3xl p-8 border border-neutral-200 shadow-sm flex flex-col sm:flex-row items-center gap-6 mb-8">
+      <div class="p-8 text-center text-xs text-neutral-400 w-full">Đang kiểm tra thông tin tài khoản từ SQLite Database...</div>
     </div>
 
-    <h3 class="text-base font-bold text-neutral-900 mb-4">Các Bản Phối Đã Lên Sàn</h3>
+    <h3 class="text-base font-bold text-neutral-900 mb-4">Các Bản Phối Đã Lên Sàn Trong Database</h3>
     <div id="user-posts-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-      <div class="col-span-3 text-center py-8 text-xs text-neutral-400">Đang tải bài viết từ REST API (/api/v1/outfits)...</div>
+      <div class="col-span-3 text-center py-8 text-xs text-neutral-400">Đang tải bài viết...</div>
     </div>
   </main>
 
   <script>
-    async function loadUserPosts() {
+    const token = localStorage.getItem('vpr_token');
+    const userStr = localStorage.getItem('vpr_user');
+
+    async function initProfile() {
+      if (!token || !userStr) {
+        document.getElementById('profile-card').innerHTML = `
+          <div class="text-center py-6 w-full space-y-3">
+            <h3 class="text-lg font-bold text-neutral-900">Bạn chưa đăng nhập</h3>
+            <p class="text-xs text-neutral-500">Vui lòng đăng nhập hoặc tạo tài khoản để xem hồ sơ cá nhân và quản lý bản phối.</p>
+            <a href="/page/login.html" class="inline-block px-5 py-2.5 bg-[#E60023] text-white text-xs font-bold rounded-xl shadow">Đăng Nhập Hoặc Đăng Ký Ngay</a>
+          </div>
+        `;
+        document.getElementById('user-posts-grid').innerHTML = '<div class="col-span-3 text-center py-4 text-xs text-neutral-400">Vui lòng đăng nhập để xem bài viết của bạn.</div>';
+        return;
+      }
+
       try {
-        const res = await fetch('/api/v1/outfits');
+        const u = JSON.parse(userStr);
+        document.getElementById('nav-auth-slot').innerHTML = `
+          <button onclick="logout()" class="px-3 py-1.5 bg-neutral-100 hover:bg-red-50 text-neutral-700 hover:text-red-600 rounded-xl transition-colors">Đăng Xuất</button>
+        `;
+
+        document.getElementById('profile-card').innerHTML = `
+          <img src="${u.avatar_url || u.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}" class="w-24 h-24 rounded-3xl object-cover ring-4 ring-neutral-100" />
+          <div class="space-y-1 text-center sm:text-left">
+            <h2 class="text-2xl font-black text-neutral-900">${u.full_name || u.fullName}</h2>
+            <p class="text-xs text-neutral-400">@${u.username} • <span class="text-emerald-600 font-bold">Tài khoản SQLite Real</span></p>
+            <p class="text-xs text-neutral-600 max-w-lg mt-1">${u.bio || 'Chưa cập nhật tiểu sử'}</p>
+          </div>
+        `;
+
+        // Load user's real posts
+        const res = await fetch('/api/v1/outfits/user/' + u.username, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
         const posts = await res.json();
         const grid = document.getElementById('user-posts-grid');
-        grid.innerHTML = posts.map(p => `
-          <div class="bg-white rounded-2xl overflow-hidden border border-neutral-200 shadow-sm">
-            <img src="${p.imageUrl}" class="w-full aspect-[3/4] object-cover" />
-            <div class="p-4 space-y-1">
-              <h4 class="font-bold text-xs truncate">${p.title}</h4>
-              <p class="text-[11px] text-neutral-400">📍 ${p.event}</p>
+
+        if (posts.length === 0) {
+          grid.innerHTML = '<div class="col-span-3 text-center py-8 text-xs text-neutral-400">Bạn chưa có bài đăng nào. Hãy vào Phòng Thử Đồ để tạo bài đăng đầu tiên!</div>';
+        } else {
+          grid.innerHTML = posts.map(p => `
+            <div class="bg-white rounded-2xl overflow-hidden border border-neutral-200 shadow-sm">
+              <img src="${p.imageUrl}" class="w-full aspect-[3/4] object-cover" />
+              <div class="p-4 space-y-1">
+                <h4 class="font-bold text-xs truncate">${p.title}</h4>
+                <p class="text-[11px] text-neutral-400">📍 ${p.event}</p>
+                <p class="text-[11px] text-red-600 font-bold">❤️ ${p.likesCount || 0} lượt thích</p>
+              </div>
             </div>
-          </div>
-        `).join('');
-      } catch(e) { console.error(e); }
+          `).join('');
+        }
+      } catch(e) {
+        console.error(e);
+      }
     }
-    loadUserPosts();
+
+    function logout() {
+      localStorage.removeItem('vpr_token');
+      localStorage.removeItem('vpr_user');
+      window.location.reload();
+    }
+
+    initProfile();
   </script>
 </body>
 </html>

@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Phòng Thử Đồ - Audition Việt Phục Remix</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    :root { --audition-red: #E60023; }
-  </style>
 </head>
 <body class="bg-neutral-50 text-neutral-800 min-h-screen">
   <!-- Top Navigation -->
@@ -24,7 +21,9 @@
       <a href="/" class="text-neutral-600 hover:text-[#E60023] transition-colors">🏠 Khám Phá Feed</a>
       <a href="/page/wardrobe.html" class="text-[#E60023] bg-red-50 px-3 py-1.5 rounded-xl">👗 Phòng Thử Đồ</a>
       <a href="/page/profile.html" class="text-neutral-600 hover:text-[#E60023] transition-colors">📌 Trang Cá Nhân</a>
-      <a href="/page/login.html" class="px-4 py-2 bg-neutral-900 text-white rounded-xl hover:bg-neutral-800 transition-colors">Đăng Nhập</a>
+      <div id="nav-auth-slot">
+        <a href="/page/login.html" class="px-4 py-2 bg-neutral-900 text-white rounded-xl hover:bg-neutral-800 transition-colors">Đăng Nhập / Đăng Ký</a>
+      </div>
     </nav>
   </header>
 
@@ -38,9 +37,9 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
       <!-- Wardrobe Items Grid -->
       <div class="lg:col-span-8 space-y-4">
-        <h3 class="text-sm font-bold text-neutral-800 uppercase tracking-wider">Chọn Món Đồ Vào Set</h3>
+        <h3 class="text-sm font-bold text-neutral-800 uppercase tracking-wider">Chọn Món Đồ Vào Set (Lưu trong SQLite)</h3>
         <div id="wardrobe-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          <div class="p-8 text-center text-xs text-neutral-400 col-span-3">Đang tải tủ đồ từ Spring Boot API (/api/v1/wardrobe)...</div>
+          <div class="p-8 text-center text-xs text-neutral-400 col-span-3">Đang tải tủ đồ từ SQLite Database (/api/v1/wardrobe)...</div>
         </div>
       </div>
 
@@ -62,8 +61,8 @@
           <h4 id="result-title" class="font-black text-neutral-900 text-base"></h4>
           <p id="result-feedback" class="text-xs text-neutral-700 italic bg-red-50 p-3 rounded-xl border border-red-100"></p>
           <p id="result-notes" class="text-xs text-neutral-500"></p>
-          <button id="btn-publish" class="w-full py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold rounded-xl shadow transition-colors">
-            📌 Đăng Lên Bảng Tin
+          <button id="btn-publish" class="w-full py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold rounded-xl shadow transition-colors cursor-pointer">
+            📌 Đăng Lên Bảng Tin (Lưu vào DB)
           </button>
         </div>
       </div>
@@ -73,6 +72,19 @@
   <script>
     let selectedIds = [1, 8];
     let allItems = [];
+    let lastEvalData = null;
+
+    // Check auth
+    const token = localStorage.getItem('vpr_token');
+    const userStr = localStorage.getItem('vpr_user');
+    if (token && userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        document.getElementById('nav-auth-slot').innerHTML = `
+          <span class="text-neutral-700 font-bold">@${u.username}</span>
+        `;
+      } catch(e) {}
+    }
 
     async function loadWardrobe() {
       try {
@@ -113,6 +125,7 @@
           body: JSON.stringify({ event: eventVal, itemIds: selectedIds })
         });
         const data = await res.json();
+        lastEvalData = data;
         const box = document.getElementById('result-box');
         box.classList.remove('hidden');
         document.getElementById('result-title').innerText = data.gatekeeperTitle;
@@ -123,6 +136,48 @@
       } finally {
         btn.innerText = '🔥 Gặp Chị Gatekeeper Duyệt Đồ';
         btn.disabled = false;
+      }
+    });
+
+    document.getElementById('btn-publish').addEventListener('click', async () => {
+      if (!token) {
+        alert('Vui lòng đăng nhập để lưu bản phối vào cơ sở dữ liệu!');
+        window.location.href = '/page/login.html';
+        return;
+      }
+      if (!lastEvalData) return;
+
+      const eventVal = document.getElementById('event-input').value;
+      const selectedItem = allItems.find(i => selectedIds.includes(i.id));
+
+      try {
+        const res = await fetch('/api/v1/outfits', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            title: lastEvalData.gatekeeperTitle,
+            event: eventVal,
+            aiFeedback: lastEvalData.feedback,
+            isApproved: lastEvalData.isApproved,
+            culturalScore: lastEvalData.culturalScore,
+            imageUrl: selectedItem ? selectedItem.imageUrl : 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800',
+            itemIds: selectedIds,
+            tags: ['VietPhucRemix', 'GenZAudition']
+          })
+        });
+
+        if (res.ok) {
+          alert('Bản phối đã được lưu vào cơ sở dữ liệu và đăng lên bảng tin!');
+          window.location.href = '/';
+        } else {
+          const err = await res.json();
+          alert(err.error || 'Đăng bài thất bại');
+        }
+      } catch(e) {
+        alert('Lỗi kết nối máy chủ');
       }
     });
 

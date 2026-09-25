@@ -1,29 +1,21 @@
 import React, { useState } from 'react';
-import { Sparkles, Check, Plus, Trash2, ArrowRight, ShieldCheck, Flame, AlertCircle, Info, RefreshCw } from 'lucide-react';
-import { WardrobeItem, EvaluationResponse, User } from '../types';
+import { Sparkles, Check, Plus, Trash2, ArrowRight, ShieldCheck, Flame, RefreshCw, Info, LogIn } from 'lucide-react';
 
-interface WardrobeStudioViewProps {
-  wardrobeItems: WardrobeItem[];
-  currentUser: User | null;
-  onPublishPost: (newPostData: any) => Promise<void>;
-  onOpenAuth: () => void;
-}
-
-export const WardrobeStudioView: React.FC<WardrobeStudioViewProps> = ({
-  wardrobeItems,
+export const WardrobeStudioView = ({
+  wardrobeItems = [],
   currentUser,
   onPublishPost,
   onOpenAuth,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const [selectedItemIds, setSelectedItemIds] = useState<number[]>([1, 8, 13, 15]); // Default stylish combo
+  const [selectedItemIds, setSelectedItemIds] = useState([1, 8, 11, 14]); // Beautiful default heritage outfit
   const [eventInput, setEventInput] = useState('Dạo phố Bùi Viện đêm thứ 7');
   const [remixStyle, setRemixStyle] = useState('Streetwear Heritage Fusion');
   const [customNotes, setCustomNotes] = useState('Phối layer áo Nhật Bình khoác ngoài, chân mang combat boots và kính ma trận.');
 
   // AI Evaluation states
   const [isEvaluating, setIsEvaluating] = useState(false);
-  const [evaluationResult, setEvaluationResult] = useState<EvaluationResponse | null>(null);
+  const [evaluationResult, setEvaluationResult] = useState(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const [postTitleInput, setPostTitleInput] = useState('');
 
@@ -35,7 +27,7 @@ export const WardrobeStudioView: React.FC<WardrobeStudioViewProps> = ({
 
   const selectedItems = wardrobeItems.filter((i) => selectedItemIds.includes(i.id));
 
-  const toggleItemSelection = (id: number) => {
+  const toggleItemSelection = (id) => {
     if (selectedItemIds.includes(id)) {
       setSelectedItemIds(selectedItemIds.filter((item) => item !== id));
     } else {
@@ -56,7 +48,7 @@ export const WardrobeStudioView: React.FC<WardrobeStudioViewProps> = ({
   // Call Gemini Gatekeeper API
   const handleEvaluate = async () => {
     if (selectedItemIds.length === 0) {
-      alert('Bà nội ơi, chọn ít nhất 1 món đồ trong tủ rồi hẵng gọi chị duyệt chứ!');
+      alert('Vui lòng chọn ít nhất 1 món đồ trong tủ để Chị Gatekeeper thẩm định!');
       return;
     }
     if (!eventInput.trim()) {
@@ -90,18 +82,19 @@ export const WardrobeStudioView: React.FC<WardrobeStudioViewProps> = ({
     }
   };
 
-  // Publish outfit to social feed
+  // Publish outfit to social feed (stored in database)
   const handlePublish = async () => {
     if (!currentUser) {
-      onOpenAuth();
+      onOpenAuth('login');
       return;
     }
     if (!evaluationResult) return;
 
     setIsPublishing(true);
     try {
-      // Pick first item image or a chic remix default
-      const primaryImage = selectedItems[0]?.imageUrl || 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800&auto=format&fit=crop&q=80';
+      const primaryImage =
+        selectedItems[0]?.imageUrl ||
+        'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800&auto=format&fit=crop&q=80';
 
       await onPublishPost({
         title: postTitleInput || `${remixStyle} - ${eventInput}`,
@@ -147,7 +140,7 @@ export const WardrobeStudioView: React.FC<WardrobeStudioViewProps> = ({
           </div>
           <button
             onClick={() => setSelectedItemIds([])}
-            className="text-neutral-400 hover:text-red-600 p-2 rounded-lg transition-colors"
+            className="text-neutral-400 hover:text-red-600 p-2 rounded-lg transition-colors cursor-pointer"
             title="Xóa tất cả món đã chọn"
           >
             <Trash2 className="w-4 h-4" />
@@ -205,19 +198,23 @@ export const WardrobeStudioView: React.FC<WardrobeStudioViewProps> = ({
 
                     {/* Heritage Era Tag */}
                     <div className="absolute top-2 left-2">
-                      <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow-sm ${
-                        item.isHeritage 
-                          ? 'bg-amber-500 text-white' 
-                          : 'bg-neutral-900 text-white'
-                      }`}>
+                      <span
+                        className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow-sm ${
+                          item.isHeritage ? 'bg-amber-500 text-white' : 'bg-neutral-900 text-white'
+                        }`}
+                      >
                         {item.isHeritage ? 'DI SẢN' : 'STREETWEAR'}
                       </span>
                     </div>
 
                     {/* Selection Checkmark Badge */}
-                    <div className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all ${
-                      isSelected ? 'bg-[#E60023] text-white shadow-md' : 'bg-white/80 text-neutral-400 group-hover:text-neutral-700'
-                    }`}>
+                    <div
+                      className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                        isSelected
+                          ? 'bg-[#E60023] text-white shadow-md'
+                          : 'bg-white/80 text-neutral-400 group-hover:text-neutral-700'
+                      }`}
+                    >
                       {isSelected ? <Check className="w-4 h-4 stroke-[3]" /> : <Plus className="w-4 h-4" />}
                     </div>
                   </div>
@@ -428,7 +425,7 @@ export const WardrobeStudioView: React.FC<WardrobeStudioViewProps> = ({
 
               {/* Post Title input before publishing */}
               <div className="space-y-1.5 pt-2 border-t border-neutral-100">
-                <label className="text-xs font-bold text-neutral-700">Tên Bản Phối (Đăng lên Bảng Tin):</label>
+                <label className="text-xs font-bold text-neutral-700">Tên Bản Phối (Lưu vào Database & Feed):</label>
                 <input
                   type="text"
                   value={postTitleInput}
@@ -437,6 +434,19 @@ export const WardrobeStudioView: React.FC<WardrobeStudioViewProps> = ({
                   className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#E60023] font-semibold"
                 />
               </div>
+
+              {/* Not Logged In Warning */}
+              {!currentUser && (
+                <div className="p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-xs flex items-center justify-between">
+                  <span>Bạn cần đăng nhập tài khoản để lưu bản phối vào database.</span>
+                  <button
+                    onClick={() => onOpenAuth('login')}
+                    className="font-bold underline text-[#E60023] cursor-pointer"
+                  >
+                    Đăng nhập ngay
+                  </button>
+                </div>
+              )}
 
               {/* Actions: Publish or Close */}
               <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
@@ -452,7 +462,7 @@ export const WardrobeStudioView: React.FC<WardrobeStudioViewProps> = ({
                   className="w-full sm:w-auto px-6 py-3 bg-[#E60023] hover:bg-red-700 text-white text-xs font-black rounded-xl shadow-lg shadow-red-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {isPublishing ? (
-                    'Đang Đăng Lên Bảng Tin...'
+                    'Đang Lưu Vào Database...'
                   ) : (
                     <>
                       <span>📌 Đăng Lên Bảng Tin Social Feed</span>

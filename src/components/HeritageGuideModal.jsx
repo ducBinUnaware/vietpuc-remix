@@ -1,15 +1,7 @@
 import React from 'react';
-import { X, BookOpen, Sparkles, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { X, BookOpen, ShieldCheck } from 'lucide-react';
 
-interface HeritageGuideModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export const HeritageGuideModal: React.FC<HeritageGuideModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
+export const HeritageGuideModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const heritageItems = [
@@ -44,7 +36,7 @@ export const HeritageGuideModal: React.FC<HeritageGuideModalProps> = ({
       <div className="bg-white rounded-3xl max-w-3xl w-full p-6 md:p-8 space-y-6 shadow-2xl relative my-8">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-700 p-2 rounded-full hover:bg-neutral-100 transition-colors"
+          className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-700 p-2 rounded-full hover:bg-neutral-100 transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
@@ -65,9 +57,7 @@ export const HeritageGuideModal: React.FC<HeritageGuideModalProps> = ({
             <ShieldCheck className="w-4 h-4" /> Nguyên Tắc Vàng Của Chị Gatekeeper
           </h4>
           <p className="text-xs text-neutral-700 leading-relaxed">
-            "Remix là sáng tạo để di sản sống trong thời đại mới, không phải phá nát cội nguồn. 
-            Mặc Việt Phục là mang cốt cách người Việt: tự tin, duyên dáng và kiêu hãnh. 
-            Phối cùng Streetwear càng chất, miễn là không xúc phạm hình hài cổ nhân!"
+            "Remix là sáng tạo để di sản sống trong thời đại mới, không phải phá nát cội nguồn. Mặc Việt Phục là mang cốt cách người Việt: tự tin, duyên dáng và kiêu hãnh. Phối cùng Streetwear càng chất, miễn là không xúc phạm hình hài cổ nhân!"
           </p>
         </div>
 
@@ -92,7 +82,7 @@ export const HeritageGuideModal: React.FC<HeritageGuideModalProps> = ({
         <div className="text-right">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl text-xs font-bold transition-colors"
+            className="px-6 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
           >
             Đã Hiểu, Quay Lại Sàn Diễn
           </button>

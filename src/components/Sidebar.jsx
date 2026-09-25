@@ -1,18 +1,7 @@
 import React from 'react';
-import { Home, Shirt, User as UserIcon, BookOpen, Settings, LogOut, LogIn, Sparkles, Compass } from 'lucide-react';
-import { User } from '../types';
+import { Home, Shirt, User as UserIcon, BookOpen, Settings, LogOut, LogIn, Sparkles, Database, UserPlus } from 'lucide-react';
 
-interface SidebarProps {
-  currentTab: string;
-  setCurrentTab: (tab: string) => void;
-  currentUser: User | null;
-  onOpenAuth: () => void;
-  onLogout: () => void;
-  onOpenGuide: () => void;
-  onOpenArchitecture: () => void;
-}
-
-export const Sidebar: React.FC<SidebarProps> = ({
+export const Sidebar = ({
   currentTab,
   setCurrentTab,
   currentUser,
@@ -25,7 +14,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <aside className="w-20 md:w-64 bg-white border-r border-neutral-200 h-screen sticky top-0 flex flex-col justify-between p-3 md:p-5 z-30 select-none">
       {/* Brand Header */}
       <div>
-        <div 
+        <div
           onClick={() => setCurrentTab('feed')}
           className="flex items-center gap-3 cursor-pointer group mb-8 px-1"
         >
@@ -45,12 +34,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <nav className="space-y-2">
           <button
             onClick={() => setCurrentTab('feed')}
-            className={`w-full flex items-center gap-3.5 px-3 py-3 rounded-2xl text-sm font-semibold transition-all ${
+            className={`w-full flex items-center gap-3.5 px-3 py-3 rounded-2xl text-sm font-semibold transition-all cursor-pointer ${
               currentTab === 'feed'
                 ? 'bg-neutral-900 text-white shadow-sm'
                 : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
             }`}
-            title="Bảng Tin (Social Feed)"
+            title="Khám Phá Bảng Tin"
           >
             <Home className="w-5 h-5 shrink-0" />
             <span className="hidden md:inline">Khám Phá (Feed)</span>
@@ -58,12 +47,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <button
             onClick={() => setCurrentTab('wardrobe')}
-            className={`w-full flex items-center gap-3.5 px-3 py-3 rounded-2xl text-sm font-semibold transition-all relative ${
+            className={`w-full flex items-center gap-3.5 px-3 py-3 rounded-2xl text-sm font-semibold transition-all cursor-pointer relative ${
               currentTab === 'wardrobe'
                 ? 'bg-[#E60023] text-white shadow-md shadow-red-500/25'
                 : 'text-neutral-600 hover:bg-red-50 hover:text-[#E60023]'
             }`}
-            title="Phòng Thử Đồ (Fitting Room)"
+            title="Phòng Thử Đồ Tương Tác"
           >
             <Shirt className="w-5 h-5 shrink-0" />
             <span className="hidden md:inline">Phòng Thử Đồ</span>
@@ -72,23 +61,38 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </span>
           </button>
 
-          <button
-            onClick={() => setCurrentTab('profile')}
-            className={`w-full flex items-center gap-3.5 px-3 py-3 rounded-2xl text-sm font-semibold transition-all ${
-              currentTab === 'profile'
-                ? 'bg-neutral-900 text-white shadow-sm'
-                : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
-            }`}
-            title="Trang Cá Nhân (Profile)"
-          >
-            <UserIcon className="w-5 h-5 shrink-0" />
-            <span className="hidden md:inline">Trang Cá Nhân</span>
-          </button>
+          {currentUser ? (
+            <button
+              onClick={() => setCurrentTab('profile')}
+              className={`w-full flex items-center gap-3.5 px-3 py-3 rounded-2xl text-sm font-semibold transition-all cursor-pointer ${
+                currentTab === 'profile'
+                  ? 'bg-neutral-900 text-white shadow-sm'
+                  : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
+              }`}
+              title="Trang Cá Nhân"
+            >
+              <UserIcon className="w-5 h-5 shrink-0" />
+              <span className="hidden md:inline">Trang Cá Nhân</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setCurrentTab('auth')}
+              className={`w-full flex items-center gap-3.5 px-3 py-3 rounded-2xl text-sm font-semibold transition-all cursor-pointer ${
+                currentTab === 'auth'
+                  ? 'bg-neutral-900 text-white shadow-sm'
+                  : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
+              }`}
+              title="Đăng Nhập / Đăng Ký"
+            >
+              <LogIn className="w-5 h-5 shrink-0 text-[#E60023]" />
+              <span className="hidden md:inline">Đăng Nhập / Ký</span>
+            </button>
+          )}
 
           <div className="pt-4 border-t border-neutral-100 mt-4 space-y-1">
             <button
               onClick={onOpenGuide}
-              className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors"
+              className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors cursor-pointer"
               title="Điển Cố Cổ Phục"
             >
               <BookOpen className="w-5 h-5 shrink-0 text-amber-600" />
@@ -97,11 +101,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             <button
               onClick={onOpenArchitecture}
-              className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors"
-              title="Kiến Trúc Spring Boot 3"
+              className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors cursor-pointer"
+              title="SQLite Database & Backend"
             >
-              <Settings className="w-5 h-5 shrink-0 text-neutral-500" />
-              <span className="hidden md:inline">Spring Boot & H2</span>
+              <Database className="w-5 h-5 shrink-0 text-emerald-600" />
+              <span className="hidden md:inline">Database & System</span>
             </button>
           </div>
         </nav>
@@ -111,18 +115,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="pt-4 border-t border-neutral-100">
         {currentUser ? (
           <div className="flex items-center justify-between p-1.5 rounded-2xl hover:bg-neutral-50 transition-colors">
-            <div 
+            <div
               onClick={() => setCurrentTab('profile')}
               className="flex items-center gap-2.5 cursor-pointer overflow-hidden"
             >
               <img
-                src={currentUser.avatarUrl}
-                alt={currentUser.fullName}
+                src={currentUser.avatar_url || currentUser.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
+                alt={currentUser.full_name || currentUser.fullName}
                 className="w-9 h-9 rounded-full object-cover ring-2 ring-neutral-200 shrink-0"
               />
               <div className="hidden md:block truncate text-left">
                 <p className="text-xs font-bold text-neutral-900 truncate leading-tight">
-                  {currentUser.fullName}
+                  {currentUser.full_name || currentUser.fullName}
                 </p>
                 <p className="text-[11px] text-neutral-500 truncate">
                   @{currentUser.username}
@@ -131,20 +135,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <button
               onClick={onLogout}
-              className="hidden md:flex p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              className="hidden md:flex p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
               title="Đăng xuất"
             >
               <LogOut className="w-4 h-4" />
             </button>
           </div>
         ) : (
-          <button
-            onClick={onOpenAuth}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-3 bg-[#E60023] text-white rounded-xl text-xs font-bold hover:bg-red-700 transition-colors shadow-sm"
-          >
-            <LogIn className="w-4 h-4" />
-            <span className="hidden md:inline">Đăng Nhập</span>
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={() => onOpenAuth('login')}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-3 bg-[#E60023] text-white rounded-xl text-xs font-bold hover:bg-red-700 transition-colors shadow-sm cursor-pointer"
+            >
+              <LogIn className="w-4 h-4" />
+              <span className="hidden md:inline">Đăng Nhập</span>
+            </button>
+            <button
+              onClick={() => onOpenAuth('register')}
+              className="w-full hidden md:flex items-center justify-center gap-2 py-2 px-3 border border-neutral-200 text-neutral-700 rounded-xl text-xs font-bold hover:bg-neutral-100 transition-colors cursor-pointer"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>Đăng Ký Tài Khoản</span>
+            </button>
+          </div>
         )}
       </div>
     </aside>
