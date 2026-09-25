@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng Nhập - Audition Việt Phục Remix</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-neutral-900 text-white min-h-screen flex items-center justify-center p-4">
+  <div class="bg-neutral-950 border border-neutral-800 max-w-md w-full p-8 rounded-3xl shadow-2xl space-y-6">
+    <div class="text-center space-y-2">
+      <div class="w-12 h-12 bg-[#E60023] rounded-2xl flex items-center justify-center mx-auto text-xl font-black shadow-lg">V</div>
+      <h2 class="text-xl font-black">Audition Việt Phục Remix</h2>
+      <p class="text-xs text-neutral-400">Đăng nhập tài khoản nhà phối đồ di sản Gen-Z</p>
+    </div>
+
+    <form id="auth-form" class="space-y-4 text-xs">
+      <div class="space-y-1">
+        <label class="font-bold text-neutral-300">Tên đăng nhập (Username)</label>
+        <input id="uname" type="text" value="linhdan_phuc" required class="w-full bg-neutral-900 border border-neutral-700 rounded-xl p-3 text-white focus:outline-none focus:border-red-500">
+      </div>
+
+      <div class="space-y-1">
+        <label class="font-bold text-neutral-300">Mật khẩu</label>
+        <input id="pwd" type="password" value="password123" required class="w-full bg-neutral-900 border border-neutral-700 rounded-xl p-3 text-white focus:outline-none focus:border-red-500">
+      </div>
+
+      <button type="submit" class="w-full py-3 bg-[#E60023] hover:bg-red-700 text-white font-extrabold rounded-xl transition-colors cursor-pointer shadow-lg">
+        Đăng Nhập Ngay
+      </button>
+
+      <div class="text-center pt-2">
+        <a href="/" class="text-neutral-500 hover:text-white transition-colors">← Quay lại Bảng Tin</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('auth-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const u = document.getElementById('uname').value;
+      const p = document.getElementById('pwd').value;
+      try {
+        const res = await fetch('/api/v1/auth/login', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ username: u, password: p })
+        });
+        const data = await res.json();
+        if (data.success) {
+          localStorage.setItem('vpr_user', JSON.stringify(data));
+          localStorage.setItem('vpr_token', data.token);
+          window.location.href = '/';
+        } else {
+          alert(data.message || 'Đăng nhập thất bại');
+        }
+      } catch(e) {
+        alert('Lỗi kết nối máy chủ');
+      }
+    });
+  </script>
+</body>
+</html>

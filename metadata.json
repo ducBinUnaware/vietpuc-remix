@@ -1,0 +1,6 @@
+{
+  "name": "Audition Viet Phuc Remix",
+  "description": "Pinterest-style cultural-heritage fashion remix platform combining Gen-Z streetwear, traditional Vietnamese attire, and Google Gemini AI Gatekeeper.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trang Cá Nhân - Audition Việt Phục Remix</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-neutral-50 text-neutral-800 min-h-screen">
+  <header class="bg-white border-b border-neutral-200 sticky top-0 z-30 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a href="/" class="w-10 h-10 bg-[#E60023] text-white font-black text-xl rounded-2xl flex items-center justify-center shadow-md">V</a>
+      <div>
+        <h1 class="font-extrabold text-lg text-neutral-900 leading-tight">Audition Việt Phục Remix</h1>
+        <p class="text-xs text-neutral-500 font-medium">Hồ Sơ Nhà Phối Đồ Di Sản</p>
+      </div>
+    </div>
+
+    <nav class="flex items-center gap-4 text-xs font-bold">
+      <a href="/" class="text-neutral-600 hover:text-[#E60023] transition-colors">🏠 Khám Phá Feed</a>
+      <a href="/page/wardrobe.html" class="text-neutral-600 hover:text-[#E60023] transition-colors">👗 Phòng Thử Đồ</a>
+      <a href="/page/profile.html" class="text-[#E60023] bg-red-50 px-3 py-1.5 rounded-xl">📌 Trang Cá Nhân</a>
+      <a href="/page/login.html" class="px-4 py-2 bg-neutral-900 text-white rounded-xl">Đăng Nhập</a>
+    </nav>
+  </header>
+
+  <main class="max-w-4xl mx-auto p-6 md:p-8">
+    <div class="bg-white rounded-3xl p-8 border border-neutral-200 shadow-sm flex items-center gap-6 mb-8">
+      <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400" class="w-24 h-24 rounded-3xl object-cover ring-4 ring-neutral-100" />
+      <div class="space-y-1">
+        <h2 class="text-2xl font-black text-neutral-900">Linh Đan Phạm</h2>
+        <p class="text-xs text-neutral-400">@linhdan_phuc</p>
+        <p class="text-xs text-neutral-600 max-w-lg">Gen-Z mê Áo Nhật Bình & phối đồ Streetwear. Sống tại Sài Gòn 🌿</p>
+      </div>
+    </div>
+
+    <h3 class="text-base font-bold text-neutral-900 mb-4">Các Bản Phối Đã Lên Sàn</h3>
+    <div id="user-posts-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <div class="col-span-3 text-center py-8 text-xs text-neutral-400">Đang tải bài viết từ REST API (/api/v1/outfits)...</div>
+    </div>
+  </main>
+
+  <script>
+    async function loadUserPosts() {
+      try {
+        const res = await fetch('/api/v1/outfits');
+        const posts = await res.json();
+        const grid = document.getElementById('user-posts-grid');
+        grid.innerHTML = posts.map(p => `
+          <div class="bg-white rounded-2xl overflow-hidden border border-neutral-200 shadow-sm">
+            <img src="${p.imageUrl}" class="w-full aspect-[3/4] object-cover" />
+            <div class="p-4 space-y-1">
+              <h4 class="font-bold text-xs truncate">${p.title}</h4>
+              <p class="text-[11px] text-neutral-400">📍 ${p.event}</p>
+            </div>
+          </div>
+        `).join('');
+      } catch(e) { console.error(e); }
+    }
+    loadUserPosts();
+  </script>
+</body>
+</html>
